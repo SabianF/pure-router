@@ -1,42 +1,27 @@
-import http from "node:http";
 import Router from "./src/data/models/router.js";
 
-class RequestModel {
-  /**
-   * @type {http.ClientRequest}
-   */
-  #request;
-
-  constructor(request) {
-    this.#request = request;
-  }
-}
-
-function runApp() {
-
+function testRouter() {
   const router = new Router();
-  const handlers = router.request_handlers;
 
-  const server = http.createServer(async (request, response) => {
-    for (let i = 0; i < handlers.length; i++) {
-      const handler = handlers[i];
-      if (handler.is_middleware) {
-        await handler.handler_function(request, response);
-        continue;
-      }
-
-      if (
-        request.method === handler.method &&
-        request.url === handler.url
-      ) {
-        handler.handler_function(request, response);
-      }
-    }
+  router.use((request, response) => {
+    console.log(
+      new Date().toISOString(),
+      request.method,
+      request.url,
+    );
   });
 
-  server.listen(3333, () => {
-    console.log(`Server started at http://localhost:3333/`);
+  router.get("/", (request, response) => {
+    response.statusCode = 200;
+    response.write("<h1>Hello!</h1>");
+    response.end();
+  });
+
+  router.listen(3333, () => {
+    console.log("Server started at http://localhost:3333/");
   });
 }
 
-runApp();
+testRouter();
+
+export default Router;
