@@ -1,0 +1,16 @@
+{
+  "name": "pure-router",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Sabian Finogwar",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "test:watch": "node --test --watch",
+    "debug": "node --inspect index.js",
+    "debug:watch": "node --inspect --watch index.js",
+    "watch": "node --watch index.js",
+    "dev": "node index.js"
+  }
+}
