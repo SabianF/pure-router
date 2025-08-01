@@ -78,24 +78,55 @@ export default class Router {
    * @param {function()} listen_handler_function
    */
   listen(port, listen_handler_function) {
-    const server = this.#http_lib.createServer(
-      async (request, response) => {
-        for (let i = 0; i < this.#request_handlers.length; i++) {
-          const handler = this.#request_handlers[i];
-          if (handler.is_middleware) {
-            await handler.handler_function(request, response);
-            continue;
-          }
-
-          if (
-            request.method === handler.method &&
-            request.url === handler.url
-          ) {
-            handler.handler_function(request, response);
-          }
-        }
+    const default_not_found_handler = new Handler({
+      is_middleware: true,
+      handler_function: (request, response) => {
+        response.statusCode = 404;
+        response.setHeader("Content-Type", "text/html");
+        response.write(`
+          <!DOCTYPE html>
+          <html lang="en">
+            <head>
+              <meta charset="UTF-8">
+              <meta name="viewport"  content="width=device-width, initial-scale=1.0">
+              <meta http-equiv="X-UA-Compatible"  content="ie=edge">
+              <title>Not found</title>
+            </head>
+            <body>
+              <h1>Not found: ${request.url}</h1>
+            </body>
+          </html>
+        `);
+        response.end();
       },
-    );
+    });
+    this.#request_handlers.push(default_not_found_handler);
+
+    /**
+     * @type {HandlerFunction}
+     */
+    const request_listener = async (request, response) => {
+      for (let i = 0; i < this.#request_handlers.length; i++) {
+        const handler = this.#request_handlers[i];
+
+        if (response.writableEnded) {
+          break;
+        }
+
+        if (handler.is_middleware) {
+          await handler.handler_function(request, response);
+          continue;
+        }
+
+        if (
+          request.method === handler.method &&
+          request.url === handler.url
+        ) {
+          handler.handler_function(request, response);
+        }
+      }
+    };
+    const server = this.#http_lib.createServer(request_listener);
 
     return server.listen(port, listen_handler_function);
   }
