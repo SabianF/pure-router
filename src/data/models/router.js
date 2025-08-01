@@ -1,4 +1,5 @@
 import Handler from "../../domain/entities/handler.js";
+import notFoundPage from "../../domain/presentation/pages/not_found.js";
 
 /**
  * @typedef {import("../../domain/entities/types.js").HandlerFunction} HandlerFunction
@@ -83,20 +84,7 @@ export default class Router {
       handler_function: (request, response) => {
         response.statusCode = 404;
         response.setHeader("Content-Type", "text/html");
-        response.write(`
-          <!DOCTYPE html>
-          <html lang="en">
-            <head>
-              <meta charset="UTF-8">
-              <meta name="viewport"  content="width=device-width, initial-scale=1.0">
-              <meta http-equiv="X-UA-Compatible"  content="ie=edge">
-              <title>Not found</title>
-            </head>
-            <body>
-              <h1>Not found: ${request.url}</h1>
-            </body>
-          </html>
-        `);
+        response.write(notFoundPage(request.url));
         response.end();
       },
     });

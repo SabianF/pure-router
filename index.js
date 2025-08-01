@@ -1,6 +1,7 @@
 import Router from "./src/data/models/router.js";
 import HttpLib from "./src/data/sources/http_lib.js";
 import old_fs, { promises as fs } from "node:fs";
+import notFoundPage from "./src/domain/presentation/pages/not_found.js";
 
 const accepted_file_exts = {
   ".css": "text/css",
@@ -55,6 +56,9 @@ function createStaticHandler(base_path) {
     }
 
     if (old_fs.existsSync(sanitized_path) === false) {
+      response.statusCode = 404;
+      response.write(notFoundPage(sanitized_path));
+      response.end();
       return;
     }
 
