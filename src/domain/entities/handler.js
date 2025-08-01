@@ -1,11 +1,11 @@
 /**
- * @typedef {import("./types.js").HandlerFunction} HandlerFunction
+ * @typedef {import("./types.js").ClientHandlerFunction} ClientHandlerFunction
  *
  * @typedef HandlerProps
  * @property {Boolean} is_middleware
  * @property {String} method
  * @property {String} url
- * @property {HandlerFunction} handler_function
+ * @property {ClientHandlerFunction} handler_function
  */
 
 export default class Handler {
@@ -25,7 +25,7 @@ export default class Handler {
   url;
 
   /**
-   * @type {HandlerFunction}
+   * @type {ClientHandlerFunction}
    */
   handler_function;
 

@@ -85,7 +85,7 @@ export default class Router {
       handler_function: (request, response) => {
         response.statusCode = 404;
         response.setHeader("Content-Type", "text/html");
-        response.write(notFoundPage(request.url));
+        response.sendHtml(notFoundPage(request.url));
         response.end();
       },
     });
