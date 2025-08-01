@@ -122,7 +122,7 @@ export default class Router {
           request.method === handler.method &&
           request.url === handler.url
         ) {
-          handler.handler_function(request, response);
+          await handler.handler_function(request, response);
         }
       }
     };
