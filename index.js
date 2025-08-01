@@ -2,7 +2,11 @@ import Router from "./src/data/models/router.js";
 import HttpLib from "./src/data/sources/http_lib.js";
 import old_fs, { promises as fs } from "node:fs";
 import notFoundPage from "./src/domain/presentation/pages/not_found.js";
-import runFakeClientServer from "./fake_client.js";
+import { getHttpStatusCodes } from "./src/domain/repositories/utilities.js";
+
+/**
+ * @typedef {Router} Router
+ */
 
 const accepted_file_exts = {
   ".css": "text/css",
@@ -37,7 +41,7 @@ function createStaticHandler(base_path) {
     .replace(/((\/)(?!.))/, "");
 
   /**
-   * @type {import("./src/domain/entities/types.js").HandlerFunction}
+   * @type {import("./src/domain/entities/types.js").ClientHandlerFunction}
    */
   const handler = async (request, response) => {
     const sanitized_path = (normalized_base_path + request.url)
@@ -57,17 +61,15 @@ function createStaticHandler(base_path) {
     }
 
     if (old_fs.existsSync(sanitized_path) === false) {
-      response.statusCode = 404;
-      response.write(notFoundPage(sanitized_path));
-      response.end();
+      response.setStatus(404);
+      response.sendHtml(notFoundPage(sanitized_path));
       return;
     }
 
     const file_data = await fs.readFile(sanitized_path);
 
     response.setHeader("Content-Type", content_type);
-    response.write(file_data);
-    response.end();
+    response.send(file_data);
   };
 
   return handler;
@@ -76,6 +78,5 @@ function createStaticHandler(base_path) {
 export default {
   createRouter: createRouter,
   createStaticHandler: createStaticHandler,
+  getHttpStatusCodes: getHttpStatusCodes,
 };
-
-runFakeClientServer();

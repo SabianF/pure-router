@@ -1,5 +1,6 @@
 import Handler from "../../domain/entities/handler.js";
 import notFoundPage from "../../domain/presentation/pages/not_found.js";
+import ResponseModel from "./response.js";
 
 /**
  * @typedef {import("../../domain/entities/types.js").HandlerFunction} HandlerFunction
@@ -94,6 +95,8 @@ export default class Router {
      * @type {HandlerFunction}
      */
     const request_listener = async (request, response) => {
+      const response_model = new ResponseModel(response);
+
       for (let i = 0; i < this.#request_handlers.length; i++) {
         const handler = this.#request_handlers[i];
 
@@ -102,7 +105,7 @@ export default class Router {
         }
 
         if (handler.is_middleware) {
-          await handler.handler_function(request, response);
+          await handler.handler_function(request, response_model);
           continue;
         }
 
@@ -110,7 +113,7 @@ export default class Router {
           request.method === handler.method &&
           request.url === handler.url
         ) {
-          await handler.handler_function(request, response);
+          await handler.handler_function(request, response_model);
         }
       }
     };

@@ -11,10 +11,10 @@ export default class ResponseModel {
 
   /**
    *
-   * @param {ServerResponse} request
+   * @param {ServerResponse} response
    */
-  constructor(request) {
-    this.#response = request;
+  constructor(response) {
+    this.#response = response;
   }
 
   /**
@@ -31,13 +31,29 @@ export default class ResponseModel {
     }
 
     this.#response.statusCode = status_code;
+    return this;
+  }
+
+  setHeader(name, value) {
+    this.#response.setHeader(name, value);
+    return this;
+  }
+
+  sendHtml(html) {
+    this.#response.setHeader("Content-Type", "text/html");
+    this.#response.write(html);
+    this.#response.end();
+    return this;
   }
 
   send(data) {
-    return this.#response.write(data);
+    this.#response.write(data);
+    this.#response.end();
+    return this;
   }
 
   end() {
-    return this.#response.end();
+    this.#response.end();
+    return this;
   }
 }
