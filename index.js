@@ -2,6 +2,7 @@ import Router from "./src/data/models/router.js";
 import HttpLib from "./src/data/sources/http_lib.js";
 import old_fs, { promises as fs } from "node:fs";
 import notFoundPage from "./src/domain/presentation/pages/not_found.js";
+import runFakeClientServer from "./fake_client.js";
 
 const accepted_file_exts = {
   ".css": "text/css",
@@ -72,45 +73,9 @@ function createStaticHandler(base_path) {
   return handler;
 }
 
-function testRouter() {
-  const router = createRouter();
+export default {
+  createRouter: createRouter,
+  createStaticHandler: createStaticHandler,
+};
 
-  router.use(createStaticHandler("public/"));
-
-  router.use((request, response) => {
-    console.log(
-      new Date().toISOString(),
-      request.method,
-      request.url,
-    );
-  });
-
-  router.get("/", (request, response) => {
-    response.statusCode = 200;
-    response.setHeader("Content-Type", "text/html");
-    response.write(`
-      <!DOCTYPE html>
-      <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport"  content="width=device-width, initial-scale=1.0">
-          <meta http-equiv="X-UA-Compatible"  content="ie=edge">
-          <title>Not found</title>
-          <link rel="stylesheet" href="global.css">
-        </head>
-        <body>
-          <h1>Hello, there!</h1>
-        </body>
-      </html>
-    `);
-    response.end();
-  });
-
-  router.listen(3333, () => {
-    console.log("Server started at http://localhost:3333/");
-  });
-}
-
-testRouter();
-
-export default Router;
+runFakeClientServer();
