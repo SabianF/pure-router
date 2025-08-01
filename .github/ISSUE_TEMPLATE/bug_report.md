@@ -7,29 +7,29 @@ assignees: SabianF
 
 ---
 
-**Expected behaviour**
-A clear and concise description of what you expected to happen.
+# Expected behaviour
+A clear and concise description of what you **expected** to happen.
 
-**Actual behaviour**
-A clear and concise description of what actually happened instead.
+# Observed behaviour
+A clear and concise description of what **actually happened** instead.
 
-**Reproduction steps**
+# Reproduction steps
 Steps to reproduce the behaviour:
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
 4. See error
 
-**Screenshots (if applicable**
+# Screenshots (if applicable)
 Add screenshots to illustrate the problem and reproduction steps.
 
-**Desktop (if applicable):**
+# Desktop env (if applicable)
 - OS: [e.g. Windows 11 22103]
- - Browser + version: [e.g. Chrome 138.0.7204.168, Firefox 141.0.0]
+- Browser + version: [e.g. Chrome 138.0.7204.168, Firefox 141.0.0]
 
-**Mobile device (if applicable):**
+# Mobile env (if applicable):
 - OS: [e.g. Android 16, iOS 18.5]
- - Browser + version: [e.g. stock browser, safari]
+- Browser + version: [e.g. stock browser, safari]
 
-**Additional context**
+# Additional context
 Add any other context about the problem here.
