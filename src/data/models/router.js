@@ -1,18 +1,30 @@
 import Handler from "../../domain/entities/handler.js";
 
-import http from "node:http";
-
 /**
  * @typedef {import("../../domain/entities/types.js").HandlerFunction} HandlerFunction
+ * @typedef {import("../sources/http_lib.js").default} HttpLib
+ *
+ * @typedef RouterProps
+ * @property {HttpLib} http_lib
  */
 
 export default class Router {
+  /**
+   * @type {HttpLib}
+   */
+  #http_lib;
+
   /**
    * @type {Handler[]}
    */
   #request_handlers;
 
-  constructor() {
+  /**
+   *
+   * @param {RouterProps} props
+   */
+  constructor({ http_lib }) {
+    this.#http_lib = http_lib;
     this.#request_handlers = [];
   }
 
@@ -66,7 +78,7 @@ export default class Router {
    * @param {function()} listen_handler_function
    */
   listen(port, listen_handler_function) {
-    const server = http.createServer(
+    const server = this.#http_lib.createServer(
       async (request, response) => {
         for (let i = 0; i < this.#request_handlers.length; i++) {
           const handler = this.#request_handlers[i];
