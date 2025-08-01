@@ -2,7 +2,6 @@ import Router from "./src/data/models/router.js";
 import HttpLib from "./src/data/sources/http_lib.js";
 import old_fs, { promises as fs } from "node:fs";
 import notFoundPage from "./src/domain/presentation/pages/not_found.js";
-import { getHttpStatusCodes } from "./src/domain/repositories/utilities.js";
 
 /**
  * @typedef {Router} Router
@@ -77,6 +76,5 @@ function createStaticHandler(base_path) {
 
 export default {
   createRouter: createRouter,
-  createStaticHandler: createStaticHandler,
-  getHttpStatusCodes: getHttpStatusCodes,
+  createStaticHandler: createStaticHandler
 };
