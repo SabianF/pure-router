@@ -83,7 +83,7 @@ export default class Router {
     const default_not_found_handler = new Handler({
       is_middleware: true,
       handler_function: (request, response) => {
-        response.statusCode = 404;
+        response.setStatus(404);
         response.setHeader("Content-Type", "text/html");
         response.sendHtml(notFoundPage(request.url));
         response.end();
