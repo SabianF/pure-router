@@ -26,7 +26,6 @@ export default class ResponseModel {
   constructor(response) {
     this.#response = response;
     this.#was_handled = false;
-    this.#body = "";
   }
 
   /**
@@ -53,7 +52,7 @@ export default class ResponseModel {
 
   sendHtml(html) {
     this.#response.setHeader("Content-Type", "text/html");
-    this.#body += html;
+    this.#body = html;
     return this;
   }
 
@@ -62,14 +61,12 @@ export default class ResponseModel {
     return this;
   }
 
-  /**
-   * Writes the current data to the response, sending it to the client
-   */
-  write() {
-    if (!this.#response.writableEnded) {
-      this.#response.write(this.#body);
-    }
-    return this;
+  getBody() {
+    return this.#body;
+  }
+
+  clearBody() {
+    this.#body = "";
   }
 
   setWasHandled() {

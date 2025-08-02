@@ -1,9 +1,11 @@
 import Handler from "../../domain/entities/handler.js";
 import notFoundPage from "../../domain/presentation/pages/not_found.js";
 import ResponseModel from "./response.js";
+import crypto from "node:crypto";
 
 /**
  * @typedef {import("../../domain/entities/types.js").ClientHandlerFunction} ClientHandlerFunction
+ * @typedef {import("../../domain/entities/types.js").HandlerFunction} HandlerFunction
  * @typedef {import("../sources/http_lib.js").default} HttpLib
  *
  * @typedef RouterProps
@@ -86,13 +88,12 @@ export default class Router {
         response.setStatus(404);
         response.setHeader("Content-Type", "text/html");
         response.sendHtml(notFoundPage(request.url));
-        response.end();
       },
     });
     this.#request_handlers.push(default_not_found_handler);
 
     /**
-     * @type {ClientHandlerFunction}
+     * @type {HandlerFunction}
      */
     const request_listener = async (request, response) => {
       const response_model = new ResponseModel(response);
@@ -121,6 +122,17 @@ export default class Router {
         }
       }
 
+      const response_data_hash = crypto
+        .createHash("md5")
+        .update(response_model.getBody())
+        .digest("base64");
+
+      if (request.headers["if-none-match"] === response_data_hash) {
+        response_model.setStatus(304);
+        response_model.clearBody();
+      }
+
+      response_model.setHeader("ETag", response_data_hash);
       response_model.end();
     };
     const server = this.#http_lib.createServer(request_listener);
