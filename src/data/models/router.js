@@ -123,22 +123,23 @@ export default class Router {
         }
       }
 
+      const request_data_hash = request.headers["if-none-match"];
       const response_data_hash = crypto
         .createHash("md5")
         .update(response_model.getBody())
         .digest("base64");
 
-      if (request.headers["if-none-match"] === response_data_hash) {
+      if (request_data_hash === response_data_hash) {
         response_model.setStatus(304);
         response_model.clearBody();
       }
       response_model.setHeader("ETag", response_data_hash);
 
       if (request.headers["accept-encoding"]?.includes("gzip")) {
-        const compressed_body = zlib.gzipSync(response_model.getBody());
+        const compressed_data = zlib.gzipSync(response_model.getBody());
         response_model
           .clearBody()
-          .send(compressed_body)
+          .send(compressed_data)
           .setHeader("Content-Encoding", "gzip");
 
         // TODO: Use caching to prevent excessive resource usage from compression for multiple clients
