@@ -2,6 +2,7 @@ import Handler from "../../domain/entities/handler.js";
 import notFoundPage from "../../domain/presentation/pages/not_found.js";
 import ResponseModel from "./response.js";
 import crypto from "node:crypto";
+import zlib from "node:zlib";
 
 /**
  * @typedef {import("../../domain/entities/types.js").ClientHandlerFunction} ClientHandlerFunction
@@ -131,8 +132,18 @@ export default class Router {
         response_model.setStatus(304);
         response_model.clearBody();
       }
-
       response_model.setHeader("ETag", response_data_hash);
+
+      if (request.headers["accept-encoding"]?.includes("gzip")) {
+        const compressed_body = zlib.gzipSync(response_model.getBody());
+        response_model
+          .clearBody()
+          .send(compressed_body)
+          .setHeader("Content-Encoding", "gzip");
+
+        // TODO: Use caching to prevent excessive resource usage from compression for multiple clients
+      }
+
       response_model.end();
     };
     const server = this.#http_lib.createServer(request_listener);

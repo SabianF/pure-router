@@ -67,10 +67,12 @@ export default class ResponseModel {
 
   clearBody() {
     this.#body = "";
+    return this;
   }
 
   setWasHandled() {
     this.#was_handled = true;
+    return this;
   }
 
   getWasHandled() {
