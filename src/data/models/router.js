@@ -1,8 +1,10 @@
 import Handler from "../../domain/entities/handler.js";
 import notFoundPage from "../../domain/presentation/pages/not_found.js";
 import ResponseModel from "./response.js";
+import crypto from "node:crypto";
 
 /**
+ * @typedef {import("../../domain/entities/types.js").ClientHandlerFunction} ClientHandlerFunction
  * @typedef {import("../../domain/entities/types.js").HandlerFunction} HandlerFunction
  * @typedef {import("../sources/http_lib.js").default} HttpLib
  *
@@ -32,7 +34,7 @@ export default class Router {
 
   /**
    *
-   * @param {HandlerFunction} handler_function
+   * @param {ClientHandlerFunction} handler_function
    */
   use(handler_function) {
     if (this.#request_handlers.includes(handler_function)) {
@@ -50,7 +52,7 @@ export default class Router {
   /**
    *
    * @param {String} url
-   * @param {HandlerFunction} handler_function
+   * @param {ClientHandlerFunction} handler_function
    */
   get(url, handler_function) {
     if (
@@ -86,7 +88,6 @@ export default class Router {
         response.setStatus(404);
         response.setHeader("Content-Type", "text/html");
         response.sendHtml(notFoundPage(request.url));
-        response.end();
       },
     });
     this.#request_handlers.push(default_not_found_handler);
@@ -100,7 +101,10 @@ export default class Router {
       for (let i = 0; i < this.#request_handlers.length; i++) {
         const handler = this.#request_handlers[i];
 
-        if (response.writableEnded) {
+        if (
+          response_model.getWasHandled() ||
+          response_model.isEnded()
+        ) {
           break;
         }
 
@@ -114,8 +118,22 @@ export default class Router {
           request.url === handler.url
         ) {
           await handler.handler_function(request, response_model);
+          response_model.setWasHandled();
         }
       }
+
+      const response_data_hash = crypto
+        .createHash("md5")
+        .update(response_model.getBody())
+        .digest("base64");
+
+      if (request.headers["if-none-match"] === response_data_hash) {
+        response_model.setStatus(304);
+        response_model.clearBody();
+      }
+
+      response_model.setHeader("ETag", response_data_hash);
+      response_model.end();
     };
     const server = this.#http_lib.createServer(request_listener);
 

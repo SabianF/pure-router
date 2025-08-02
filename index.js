@@ -68,7 +68,9 @@ function createStaticHandler(base_path) {
     const file_data = await fs.readFile(sanitized_path);
 
     response.setHeader("Content-Type", content_type);
+    response.setHeader("Cache-Control", "max-age=10");
     response.send(file_data);
+    response.setWasHandled();
   };
 
   return handler;
