@@ -69,6 +69,7 @@ function createStaticHandler(base_path) {
 
     response.setHeader("Content-Type", content_type);
     response.send(file_data);
+    response.setWasHandled();
   };
 
   return handler;

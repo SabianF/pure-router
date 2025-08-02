@@ -10,11 +10,23 @@ export default class ResponseModel {
   #response;
 
   /**
+   * @type {Boolean}
+   */
+  #was_handled;
+
+  /**
+   * @type {String}
+   */
+  #body;
+
+  /**
    *
    * @param {ServerResponse} response
    */
   constructor(response) {
     this.#response = response;
+    this.#was_handled = false;
+    this.#body = "";
   }
 
   /**
@@ -41,19 +53,45 @@ export default class ResponseModel {
 
   sendHtml(html) {
     this.#response.setHeader("Content-Type", "text/html");
-    this.#response.write(html);
-    this.#response.end();
+    this.#body += html;
     return this;
   }
 
   send(data) {
-    this.#response.write(data);
-    this.#response.end();
+    this.#body = data;
     return this;
   }
 
-  end() {
-    this.#response.end();
+  /**
+   * Writes the current data to the response, sending it to the client
+   */
+  write() {
+    if (!this.#response.writableEnded) {
+      this.#response.write(this.#body);
+    }
     return this;
+  }
+
+  setWasHandled() {
+    this.#was_handled = true;
+  }
+
+  getWasHandled() {
+    return this.#was_handled;
+  }
+
+  /**
+   * Writes the current data to the response, sending it to the client, and closes the response
+   */
+  end() {
+    if (!this.#response.writableEnded) {
+      this.#response.write(this.#body);
+      this.#response.end();
+    }
+    return this;
+  }
+
+  isEnded() {
+    return this.#response.writableEnded;
   }
 }

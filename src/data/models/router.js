@@ -3,7 +3,7 @@ import notFoundPage from "../../domain/presentation/pages/not_found.js";
 import ResponseModel from "./response.js";
 
 /**
- * @typedef {import("../../domain/entities/types.js").HandlerFunction} HandlerFunction
+ * @typedef {import("../../domain/entities/types.js").ClientHandlerFunction} ClientHandlerFunction
  * @typedef {import("../sources/http_lib.js").default} HttpLib
  *
  * @typedef RouterProps
@@ -32,7 +32,7 @@ export default class Router {
 
   /**
    *
-   * @param {HandlerFunction} handler_function
+   * @param {ClientHandlerFunction} handler_function
    */
   use(handler_function) {
     if (this.#request_handlers.includes(handler_function)) {
@@ -50,7 +50,7 @@ export default class Router {
   /**
    *
    * @param {String} url
-   * @param {HandlerFunction} handler_function
+   * @param {ClientHandlerFunction} handler_function
    */
   get(url, handler_function) {
     if (
@@ -92,7 +92,7 @@ export default class Router {
     this.#request_handlers.push(default_not_found_handler);
 
     /**
-     * @type {HandlerFunction}
+     * @type {ClientHandlerFunction}
      */
     const request_listener = async (request, response) => {
       const response_model = new ResponseModel(response);
@@ -100,7 +100,10 @@ export default class Router {
       for (let i = 0; i < this.#request_handlers.length; i++) {
         const handler = this.#request_handlers[i];
 
-        if (response.writableEnded) {
+        if (
+          response_model.getWasHandled() ||
+          response_model.isEnded()
+        ) {
           break;
         }
 
@@ -114,8 +117,11 @@ export default class Router {
           request.url === handler.url
         ) {
           await handler.handler_function(request, response_model);
+          response_model.setWasHandled();
         }
       }
+
+      response_model.end();
     };
     const server = this.#http_lib.createServer(request_listener);
 
