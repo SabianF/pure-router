@@ -135,14 +135,18 @@ export default class Router {
       }
       response_model.setHeader("ETag", response_data_hash);
 
-      if (request.headers["accept-encoding"]?.includes("gzip")) {
+      const accepted_encodings = request.headers["accept-encoding"];
+      if (
+        accepted_encodings === "*" ||
+        accepted_encodings?.includes("gzip")
+      ) {
         const compressed_data = zlib.gzipSync(response_model.getBody());
         response_model
           .clearBody()
           .send(compressed_data)
           .setHeader("Content-Encoding", "gzip");
 
-        // TODO: Use caching to prevent excessive resource usage from compression for multiple clients
+        // TODO: Prevent excessive resource usage from compression for multiple clients (use caching?)
       }
 
       response_model.end();
