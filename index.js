@@ -29,21 +29,17 @@ function createRouter() {
  */
 function createStaticHandler(base_path) {
   return (next) => {
-    if (
-      typeof base_path !== "string" ||
-      base_path.length === 0
-    ) {
-      throw new Error("Missing/invalid path", { cause: base_path });
-    }
+    return async (request, response) => {
+      if (
+        typeof base_path !== "string" ||
+        base_path.length === 0
+      ) {
+        throw new Error("Missing/invalid path", { cause: base_path });
+      }
 
-    const normalized_base_path = base_path
-      .replace(/((\\)|(\/\/))/, "/")
-      .replace(/((\/)(?!.))/, "");
-
-    /**
-     * @type {import("./src/domain/entities/types.js").ClientHandlerFunction}
-     */
-    const handler = async (request, response) => {
+      const normalized_base_path = base_path
+        .replace(/((\\)|(\/\/))/, "/")
+        .replace(/((\/)(?!.))/, "");
       const sanitized_path = (normalized_base_path + request.url)
         .replace(/^(\.\.[\/\\])+/, "");
 
@@ -72,9 +68,7 @@ function createStaticHandler(base_path) {
       response.end();
       response.setWasHandled();
     };
-
-    return handler;
-  }
+  };
 }
 
 export default {

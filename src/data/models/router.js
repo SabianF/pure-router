@@ -113,6 +113,7 @@ export default class Router {
       }
 
       // Return 304 if client requests unchanged data they already have
+      // TODO: Fix hashing not working for static files (middleware)
 
       if (!response_model.getBody()) {
         return;
