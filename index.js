@@ -1,4 +1,5 @@
 import Router from "./src/data/models/router.js";
+import Caching from "./src/data/repositories/caching.js";
 import HttpLib from "./src/data/sources/http_lib.js";
 import old_fs, { promises as fs } from "node:fs";
 
@@ -65,8 +66,9 @@ function createStaticHandler(base_path) {
       response.setHeader("Content-Type", content_type);
       response.setHeader("Cache-Control", "max-age=10");
       response.send(file_data);
-      response.end();
+      Caching.checkAndSetHash(response, file_data, request);
       response.setWasHandled();
+      response.end();
     };
   };
 }

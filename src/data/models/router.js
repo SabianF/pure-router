@@ -1,7 +1,7 @@
 import Handler from "../../domain/entities/handler.js";
 import notFoundPage from "../../domain/presentation/pages/not_found.js";
+import Caching from "../repositories/caching.js";
 import ResponseModel from "./response.js";
-import crypto from "node:crypto";
 
 /**
  * @typedef {import("../../domain/entities/types.js").ClientHandlerFunction} ClientHandlerFunction
@@ -119,17 +119,7 @@ export default class Router {
         return;
       }
 
-      const response_data_hash = crypto
-        .createHash("md5")
-        .update(response_model.getBody())
-        .digest("base64");
-
-      if (request.headers["if-none-match"] === response_data_hash) {
-        response_model.setStatus(304);
-        response_model.clearBody();
-      }
-
-      response_model.setHeader("ETag", response_data_hash);
+      Caching.checkAndSetHash(response_model, response_model.getBody(), request);
 
       // Send response
 
