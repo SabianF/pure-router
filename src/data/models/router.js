@@ -12,6 +12,12 @@ import crypto from "node:crypto";
  * @property {HttpLib} http_lib
  */
 
+/**
+ * @callback MiddlewareHandlerFunction
+ * @param {ClientHandlerFunction} next
+ * @returns {ClientHandlerFunction}
+ */
+
 export default class Router {
   /**
    * @type {HttpLib}
@@ -23,6 +29,9 @@ export default class Router {
    */
   #request_handlers;
 
+  /** @type {MiddlewareHandlerFunction[]}  */
+  #middleware;
+
   /**
    *
    * @param {RouterProps} props
@@ -30,6 +39,7 @@ export default class Router {
   constructor({ http_lib }) {
     this.#http_lib = http_lib;
     this.#request_handlers = [];
+    this.#middleware = [];
   }
 
   /**
@@ -37,16 +47,7 @@ export default class Router {
    * @param {ClientHandlerFunction} handler_function
    */
   use(handler_function) {
-    if (this.#request_handlers.includes(handler_function)) {
-      throw new Error("Handler already exists", { cause: handler_function });
-    }
-
-    return this.#request_handlers.push(
-      new Handler({
-        is_middleware: true,
-        handler_function: handler_function,
-      }),
-    );
+    return this.#middleware.push(handler_function);
   }
 
   /**
@@ -93,33 +94,23 @@ export default class Router {
     this.#request_handlers.push(default_not_found_handler);
 
     /**
-     * @type {HandlerFunction}
+     * @type {ClientHandlerFunction}
      */
-    const request_listener = async (request, response) => {
-      const response_model = new ResponseModel(response);
-
-      for (let i = 0; i < this.#request_handlers.length; i++) {
-        const handler = this.#request_handlers[i];
-
-        if (
-          response_model.getWasHandled() ||
-          response_model.isEnded()
-        ) {
-          break;
-        }
-
-        if (handler.is_middleware) {
-          await handler.handler_function(request, response_model);
+    const request_listener = async (request, response_model) => {
+      for (const handler of this.#request_handlers) {
+        if (handler.method !== request.method) {
           continue;
         }
-
-        if (
-          request.method === handler.method &&
-          request.url === handler.url
-        ) {
-          await handler.handler_function(request, response_model);
-          response_model.setWasHandled();
+        if (handler.url !== request.url) {
+          continue;
         }
+        await handler.handler_function(request, response_model);
+        response_model.setWasHandled();
+        break;
+      }
+
+      if (!response_model.getBody()) {
+        return;
       }
 
       const response_data_hash = crypto
@@ -135,7 +126,16 @@ export default class Router {
       response_model.setHeader("ETag", response_data_hash);
       response_model.end();
     };
-    const server = this.#http_lib.createServer(request_listener);
+    /** @type {ClientHandlerFunction} */
+    let wrapped_listener = request_listener;
+    for (let i = this.#middleware.length - 1; i >= 0; i--) {
+      const middleware = this.#middleware[i];
+      wrapped_listener = middleware(wrapped_listener);
+    }
+    const server = this.#http_lib.createServer((request, response) => {
+      const response_model = new ResponseModel(response);
+      return wrapped_listener(request, response_model);
+    });
 
     return server.listen(port, listen_handler_function);
   }
