@@ -97,6 +97,9 @@ export default class Router {
      * @type {ClientHandlerFunction}
      */
     const request_listener = async (request, response_model) => {
+
+      // Handle client requests
+
       for (const handler of this.#request_handlers) {
         if (handler.method !== request.method) {
           continue;
@@ -108,6 +111,8 @@ export default class Router {
         response_model.setWasHandled();
         break;
       }
+
+      // Return 304 if client requests unchanged data they already have
 
       if (!response_model.getBody()) {
         return;
@@ -124,14 +129,23 @@ export default class Router {
       }
 
       response_model.setHeader("ETag", response_data_hash);
+
+      // Send response
+
       response_model.end();
     };
+
+    // Handle middleware
+
     /** @type {ClientHandlerFunction} */
     let wrapped_listener = request_listener;
     for (let i = this.#middleware.length - 1; i >= 0; i--) {
       const middleware = this.#middleware[i];
       wrapped_listener = middleware(wrapped_listener);
     }
+
+    // Start server
+
     const server = this.#http_lib.createServer((request, response) => {
       const response_model = new ResponseModel(response);
       return wrapped_listener(request, response_model);
