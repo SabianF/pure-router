@@ -83,16 +83,6 @@ export default class Router {
    * @param {function()} listen_handler_function
    */
   listen(port, listen_handler_function) {
-    const default_not_found_handler = new Handler({
-      is_middleware: true,
-      handler_function: (request, response) => {
-        response.setStatus(404);
-        response.setHeader("Content-Type", "text/html");
-        response.sendHtml(notFoundPage(request.url));
-      },
-    });
-    this.#request_handlers.push(default_not_found_handler);
-
     /**
      * @type {ClientHandlerFunction}
      */
@@ -110,6 +100,16 @@ export default class Router {
         await handler.handler_function(request, response_model);
         response_model.setWasHandled();
         break;
+      }
+
+      // Return 404 if not found
+
+      if (response_model.getWasHandled() === false) {
+        response_model.setStatus(404);
+        response_model.setHeader("Content-Type", "text/html");
+        response_model.sendHtml(notFoundPage(request.url));
+        response_model.end();
+        return;
       }
 
       // Return 304 if client requests unchanged data they already have
