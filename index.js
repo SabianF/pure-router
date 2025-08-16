@@ -8,10 +8,24 @@ import old_fs, { promises as fs } from "node:fs";
  */
 
 const accepted_file_exts = {
+  // Standard web data
   ".css": "text/css",
   ".html": "text/html",
   ".js": "text/javascript",
   ".json": "application/json",
+
+  // Text
+  ".txt": "text/plain",
+  ".md": "text/plain",
+
+  // Images
+  "apng": "image/apng",
+  "avif": "image/avif",
+  "gif": "image/gif",
+  "jpeg": "image/jpeg",
+  "png": "image/png",
+  "svg+xml": "image/svg+xml",
+  "webp": "image/webp",
 };
 
 function createRouter() {
