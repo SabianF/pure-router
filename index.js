@@ -1,7 +1,6 @@
 import Router from "./src/data/models/router.js";
 import HttpLib from "./src/data/sources/http_lib.js";
 import old_fs, { promises as fs } from "node:fs";
-import notFoundPage from "./src/domain/presentation/pages/not_found.js";
 
 /**
  * @typedef {Router} Router
