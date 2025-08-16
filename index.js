@@ -28,7 +28,6 @@ function createRouter() {
  * @returns {import("./src/data/models/router.js").MiddlewareHandlerFunction}
  */
 function createStaticHandler(base_path) {
-  // TODO: fix this to use wrapped middleware
   return (next) => {
     if (
       typeof base_path !== "string" ||
